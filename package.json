@@ -1,0 +1,11 @@
+{
+  "name": "@auto-it-australia/interactive-cherry-pick",
+  "version": "1.0.0",
+  "description": "Assists in creating release branches by cherry-picking the feature branches",
+  "main": "interactive_cherry_pick.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Lydon Gray",
+  "license": "ISC"
+}
