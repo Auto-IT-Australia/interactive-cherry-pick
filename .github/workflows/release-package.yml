@@ -5,18 +5,7 @@ on:
     types: [created]
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 16
-      - run: npm ci
-      - run: npm run build # This step ensures the package is built (compile TypeScript, etc.)
-
   publish-gpr:
-    needs: build # This ensures the publish job only runs after build is successful
     runs-on: ubuntu-latest
     permissions:
       packages: write
