@@ -1,6 +1,6 @@
 {
   "name": "@auto-it-australia/interactive-cherry-pick",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "description": "A tool to cherry-pick commits interactively",
   "main": "interactive_cherry_pick.js",
   "bin": {
