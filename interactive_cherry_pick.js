@@ -70,33 +70,43 @@ async function cherryPickCommits(commitsFile) {
     const commitHash = commit.split(' ')[0];
     console.log(`Cherry-picking commit: ${commitHash}`);
 
-    runCommand(`git cherry-pick --no-commit ${commitHash}`);
+    // Cherry-pick the commit with --no-commit to prevent auto-committing
+    let result = runCommand(`git cherry-pick --no-commit ${commitHash}`);
+    if (!result) {
+      console.log(`Error during cherry-pick for commit ${commitHash}. Skipping.`);
+      continue;
+    }
 
-    // Check for conflicts
-    const cherryPickStatus = runCommand('git status');
+    // Check for conflicts after attempting cherry-pick
+    let cherryPickStatus = runCommand('git status');
     if (cherryPickStatus && cherryPickStatus.includes('Unmerged paths')) {
       console.log('Conflict detected! Please resolve it manually.');
 
       let resolved = false;
       while (!resolved) {
-        const input = await promptUser("Type 'continue' after resolving conflicts, or 'abort' to cancel: ");
-        if (input === 'continue') {
-          console.log('Checking if conflicts are resolved...');
-          const newStatus = runCommand('git status');
-          if (!newStatus.includes('Unmerged paths')) {
+        // Delay a bit to ensure that Git has fully set the conflict status
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+
+        // Check the status again after delay
+        cherryPickStatus = runCommand('git status');
+        if (!cherryPickStatus.includes('Unmerged paths')) {
+          resolved = true;
+          console.log('Conflicts resolved.');
+        } else {
+          const input = await promptUser("Press 'Enter' after resolving conflicts, or type 'abort' to cancel: ");
+          if (input === '') {
+            console.log('Conflicts resolved. Proceeding to next commit.');
             resolved = true;
-          } else {
-            console.log('Conflicts still exist. Resolve them first.');
+          } else if (input === 'abort') {
+            console.log('Aborting cherry-pick process.');
+            runCommand('git cherry-pick --abort');
+            return;
           }
-        } else if (input === 'abort') {
-          console.log('Aborting cherry-pick process.');
-          runCommand('git cherry-pick --abort');
-          return;
         }
       }
+    } else {
+      console.log('No conflicts detected, proceeding to next commit.');
     }
-
-    console.log('No conflicts detected, proceeding to next commit.');
   }
 }
 
@@ -105,7 +115,7 @@ async function main() {
   const featureBranches = featureBranchesInput.split(',').map((branch) => branch.trim());
 
   const commitsFile = getCommitList(featureBranches);
-  cherryPickCommits(commitsFile);
+  await cherryPickCommits(commitsFile);
 }
 
 main();
